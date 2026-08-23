@@ -109,7 +109,7 @@
     font-family:'Fraunces', serif;
     font-weight:600;
     font-style:italic;
-    font-size:clamp(1.7rem, 8vw, 2.2rem);
+    font-size:clamp(1.3rem, 6vw, 1.7rem);
     text-align:center;
     border:none;
     background:transparent;
@@ -557,13 +557,14 @@
   .board-shell.capturing .board-header input::placeholder{
     opacity:0; /* the name field keeps its slot even if empty */
   }
-  /* an empty caption (still showing its placeholder) collapses away entirely
-     during export, instead of leaving a blank box or ghost text */
-  .board-shell.capturing .caption-input:placeholder-shown{
-    display:none;
-  }
   .board-shell.capturing .tile{
     padding-bottom:8px; /* controls-row is gone, tighten the tile's bottom space */
+  }
+  .board-shell.capturing{
+    /* extra breathing room above the name in the exported image, so it
+       doesn't sit right at the very top edge — on iPhone, photos viewed
+       full-bleed can get crowded by the status bar / camera cutout there */
+    padding-top:48px;
   }
 </style>
 </head>
@@ -1009,6 +1010,19 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
   // restored in the cleanup step below no matter what happens
   board.classList.add('capturing');
 
+  // Hide empty captions for the export. Done here in JS rather than via a
+  // CSS :placeholder-shown rule, because html2canvas snapshots computed
+  // styles and doesn't reliably evaluate dynamic pseudo-classes like that —
+  // the same category of gap that caused the aspect-ratio/clip-path issues
+  // earlier, so an empty caption was still showing up in the download.
+  const hiddenEmptyCaptions = [];
+  document.querySelectorAll('.caption-input').forEach(input => {
+    if (input.value.trim() === '') {
+      input.style.display = 'none';
+      hiddenEmptyCaptions.push(input);
+    }
+  });
+
   // for scalloped tiles, temporarily swap in a flattened (already-clipped)
   // <img> so html2canvas never needs to understand the live clip-path at
   // all — see flattenScallopedTile. Skipped for tiles currently in text-note
@@ -1046,6 +1060,11 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
   });
 
   try {
+    // wait one paint so the .capturing class's layout changes (hidden
+    // controls, extra top padding, flattened scallop photos) are fully
+    // reflected in the DOM before html2canvas measures and snapshots it
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
     const canvas = await withTimeout(
       html2canvas(board, {scale: 2, useCORS: true, backgroundColor: '#FBF7EE'}),
       15000
@@ -1106,6 +1125,8 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
     photoArea.style.webkitClipPath = originalClip || '';
     applyScallopClip(idx); // re-apply the live scalloped shape
   });
+
+  hiddenEmptyCaptions.forEach(input => { input.style.display = ''; });
 
   board.classList.remove('capturing');
   downloadBtn.textContent = '⬇ Save my REPORT';

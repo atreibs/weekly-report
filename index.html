@@ -477,18 +477,28 @@
     padding:18px;
     max-width:400px;
     width:100%;
+    max-height:85vh;
+    display:flex;
+    flex-direction:column;
     text-align:center;
+  }
+  .save-modal-scroll{
+    overflow-y:auto;
+    flex:1;
+    min-height:0;
+    margin-bottom:12px;
   }
   .save-modal-inner img{
     width:100%;
+    display:block;
     border-radius:12px;
-    margin-bottom:12px;
     box-shadow:0 8px 20px rgba(91,70,54,0.25);
   }
   .save-modal-inner p{
     font-size:0.85rem;
     color:var(--ink);
     margin:0 0 14px;
+    flex-shrink:0;
   }
   .save-modal-inner .close-btn{
     font-family:'Nunito', sans-serif;
@@ -499,12 +509,32 @@
     border-radius:999px;
     padding:12px 24px;
     min-height:46px;
+    flex-shrink:0;
     cursor:pointer;
   }
 
   @media (min-width:600px){
     .wrap{ max-width:560px; }
     .grid{ gap:20px; }
+  }
+
+  /* --- clean export mode: hide all editing-only chrome while html2canvas
+     captures the board, so the downloaded image only shows the content --- */
+  .board-shell.capturing .zoom-row,
+  .board-shell.capturing .controls-row{
+    display:none !important;
+  }
+  .board-shell.capturing .caption-input,
+  .board-shell.capturing .board-header input{
+    border:none;
+    background:transparent;
+  }
+  .board-shell.capturing .caption-input::placeholder,
+  .board-shell.capturing .board-header input::placeholder{
+    opacity:0; /* keep layout spacing, hide the "add a caption" prompt text itself */
+  }
+  .board-shell.capturing .tile{
+    padding-bottom:8px; /* controls-row is gone, tighten the tile's bottom space */
   }
 </style>
 </head>
@@ -543,8 +573,10 @@
 
 <div class="save-modal" id="saveModal">
   <div class="save-modal-inner">
-    <img id="saveModalImg" src="" alt="your REPORT">
-    <p>Press and hold the image above, then tap "Save to Photos" to keep it 📸</p>
+    <div class="save-modal-scroll">
+      <img id="saveModalImg" src="" alt="your REPORT">
+    </div>
+    <p>👆 Press and hold the image above, then tap "Save to Photos" 📸</p>
     <button class="close-btn" id="closeModalBtn">Got it</button>
   </div>
 </div>
@@ -828,6 +860,10 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
   downloadBtn.textContent = 'making your report...';
   downloadBtn.disabled = true;
 
+  // hide color swatches / text-clear buttons / zoom slider for a clean export —
+  // restored in the `finally` block below no matter what happens
+  board.classList.add('capturing');
+
   try {
     const canvas = await withTimeout(
       html2canvas(board, {scale: 2, useCORS: true, backgroundColor: '#FBF7EE'}),
@@ -851,8 +887,7 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
         if (shareErr && shareErr.name === 'AbortError') {
           // person closed the share sheet on purpose, nothing to do
         } else {
-          // iOS can reject share() if too much time passed since the tap;
-          // fall back to the long-press-to-save modal so they're never stuck
+          // share failed for some other reason; fall back to the save modal
           document.getElementById('saveModalImg').src = dataUrl;
           document.getElementById('saveModal').classList.add('open');
         }
@@ -866,8 +901,8 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
       link.click();
       link.remove();
     } else {
-      // Older iOS Safari with neither Web Share nor reliable download support:
-      // show the full image so they can press-and-hold to save it
+      // iOS without file-sharing support: show the full image so they can
+      // press-and-hold to save it — the modal fits the screen properly now
       document.getElementById('saveModalImg').src = dataUrl;
       document.getElementById('saveModal').classList.add('open');
     }
@@ -876,6 +911,7 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
     alert('Hmm, something went wrong making the image (' + (err && err.message ? err.message : 'unknown error') + '). Try again?');
   }
 
+  board.classList.remove('capturing');
   downloadBtn.textContent = '⬇ Save my REPORT';
   downloadBtn.disabled = false;
 });

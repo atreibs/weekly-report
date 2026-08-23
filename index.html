@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>REPORT 🌿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --sage:#8A9A7E;
+    --sage-dark:#6E7E63;
+    --buttermilk:#F5EEDC;
+    --linen:#FBF7EE;
+    --honey:#D9A85A;
+    --clay:#C97D4E;
+    --ink:#5B4636;
+    --mushroom:#C9BBA8;
+    --washi: repeating-linear-gradient(45deg, rgba(138,154,126,0.5) 0 6px, rgba(217,168,90,0.45) 6px 12px);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+
+  html{ -webkit-text-size-adjust:100%; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 5%, rgba(138,154,126,0.16), transparent 40%),
+      radial-gradient(circle at 90% 95%, rgba(217,166,160,0.18), transparent 45%),
+      var(--linen);
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    padding:24px 14px calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:6px;
+  }
+
+  header .sprig{
+    font-size:18px;
+    letter-spacing:5px;
+    color:var(--sage-dark);
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(2.1rem, 12vw, 2.8rem);
+    margin:2px 0 6px;
+    color:var(--ink);
+  }
+
+  .letters{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+    padding:0 4px;
+  }
+  .letters span{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:0.72rem;
+    color:var(--sage-dark);
+    border-bottom:2px solid var(--honey);
+    padding-bottom:1px;
+    white-space:nowrap;
+  }
+
+  .sub{
+    text-align:center;
+    font-size:0.88rem;
+    color:var(--sage-dark);
+    margin-bottom:22px;
+    padding:0 8px;
+  }
+
+  .board-shell{
+    background:linear-gradient(180deg, #FEFCF7, var(--buttermilk));
+    border-radius:22px;
+    padding:20px 16px 24px;
+    box-shadow:0 14px 32px -16px rgba(91,70,54,0.35), 0 2px 0 rgba(255,255,255,0.6) inset;
+    border:1px solid rgba(201,187,168,0.5);
+  }
+
+  .board-header{
+    text-align:center;
+    margin-bottom:4px;
+  }
+
+  .board-header input{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.2rem;
+    text-align:center;
+    border:none;
+    background:transparent;
+    color:var(--ink);
+    width:100%;
+    padding:6px;
+  }
+  .board-header input::placeholder{ color:var(--mushroom); }
+
+  .board-date{
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--sage-dark);
+    margin-bottom:18px;
+    font-style:italic;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+
+  .tile{
+    position:relative;
+    border-radius:10px;
+    background:#fff;
+    padding:10px 10px 12px;
+    box-shadow:0 10px 20px -12px rgba(91,70,54,0.4), 0 0 0 1px rgba(0,0,0,0.02);
+    transform:rotate(var(--tilt, 0deg));
+    display:flex;
+    flex-direction:column;
+  }
+  .tile:nth-child(1){ --tilt:-0.8deg; }
+  .tile:nth-child(2){ --tilt:0.6deg; }
+  .tile:nth-child(3){ --tilt:-0.5deg; }
+  .tile:nth-child(4){ --tilt:0.7deg; }
+  .tile:nth-child(5){ --tilt:-0.6deg; }
+  .tile:nth-child(6){ --tilt:0.5deg; }
+
+  .tape{
+    position:absolute;
+    top:-10px;
+    left:50%;
+    transform:translateX(-50%) rotate(-3deg);
+    width:56px;
+    height:20px;
+    background:var(--washi);
+    opacity:0.9;
+    border-radius:2px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.08);
+  }
+
+  .badge-row{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-bottom:6px;
+  }
+
+  .badge{
+    flex-shrink:0;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--sage-dark);
+    color:var(--linen);
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:0.82rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 3px 6px rgba(0,0,0,0.18);
+    border:1.5px solid var(--linen);
+  }
+
+  .tile-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:0.74rem;
+    color:var(--ink);
+    line-height:1.1;
+  }
+
+  .tile-photo{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    flex:1;
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--buttermilk);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .tile-photo img{
+    position:absolute;
+    top:50%;
+    left:50%;
+    max-width:none;
+    max-height:none;
+    display:block;
+    touch-action:none;
+    cursor:grab;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+  .tile-photo img:active{ cursor:grabbing; }
+
+  .zoom-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:8px;
+  }
+  .zoom-row span{ font-size:0.85rem; color:var(--sage-dark); flex-shrink:0; }
+  .zoom-row input[type=range]{
+    flex:1;
+    -webkit-appearance:none;
+    appearance:none;
+    height:4px;
+    border-radius:999px;
+    background:var(--mushroom);
+    outline:none;
+  }
+  .zoom-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:var(--sage-dark);
+    border:2px solid var(--linen);
+    box-shadow:0 2px 5px rgba(0,0,0,0.25);
+    cursor:pointer;
+  }
+  .zoom-row input[type=range]::-moz-range-thumb{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:var(--sage-dark);
+    border:2px solid var(--linen);
+    cursor:pointer;
+  }
+
+  .tile-photo .placeholder{
+    text-align:center;
+    color:var(--ink);
+    opacity:0.55;
+    font-size:0.68rem;
+    padding:6px;
+    font-family:'Nunito', sans-serif;
+    pointer-events:none;
+    line-height:1.3;
+  }
+  .tile-photo .placeholder svg{ display:block; margin:0 auto 5px; width:20px; height:20px; }
+
+  .tile-photo textarea{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:none;
+    resize:none;
+    background:transparent;
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:1.15rem;
+    line-height:1.25;
+    color:var(--ink);
+    padding:10px;
+    text-align:center;
+  }
+  .tile-photo textarea::placeholder{ color:rgba(91,70,54,0.4); font-family:'Nunito', sans-serif; font-size:0.72rem; font-weight:400;}
+
+  .tile-label{
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:0.7rem;
+    color:var(--mushroom);
+    margin-top:8px;
+    letter-spacing:0.3px;
+  }
+
+  /* --- mobile-first controls: stacked rows so buttons stay tappable at half width --- */
+  .controls-row{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-top:8px;
+  }
+
+  .controls-top{
+    display:grid;
+    grid-template-columns:40px 1fr;
+    gap:6px;
+  }
+
+  .color-wrap{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--linen);
+    border-radius:10px;
+    border:1.5px solid var(--mushroom);
+    min-height:38px;
+  }
+
+  input[type=color]{
+    -webkit-appearance:none;
+    width:24px;
+    height:24px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    padding:0;
+    overflow:hidden;
+    background:none;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper{ padding:0; }
+  input[type=color]::-webkit-color-swatch{ border:2px solid var(--linen); border-radius:50%; box-shadow:0 0 0 1.5px var(--mushroom); }
+  input[type=color]::-moz-color-swatch{ border:2px solid var(--linen); border-radius:50%; box-shadow:0 0 0 1.5px var(--mushroom); }
+
+  .tile-btn{
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:0.72rem;
+    color:var(--sage-dark);
+    background:var(--linen);
+    border:1.5px solid var(--mushroom);
+    border-radius:10px;
+    padding:9px 4px;
+    cursor:pointer;
+    min-height:38px;
+    width:100%;
+  }
+  .tile-btn:active{ background:var(--sage); color:var(--linen); }
+
+  .tile-btn.danger{ color:var(--clay); }
+  .tile-btn.danger:active{ background:var(--clay); color:#fff; }
+
+  /* --- name input --- */
+  input[type=text]{
+    font-family:'Nunito', sans-serif;
+    border:1.5px solid var(--mushroom);
+    border-radius:14px;
+    padding:8px 12px;
+    background:rgba(255,255,255,0.6);
+  }
+
+  .hint{
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--sage-dark);
+    margin-top:22px;
+    opacity:0.85;
+    padding:0 10px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:20px;
+    font-size:0.75rem;
+    color:var(--mushroom);
+  }
+
+  /* --- sticky bottom action bar for mobile thumb reach --- */
+  .action-bar{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    display:flex;
+    gap:10px;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, rgba(251,247,238,0), var(--linen) 30%);
+    z-index:20;
+  }
+
+  button.main-btn{
+    flex:1;
+    font-family:'Nunito', sans-serif;
+    font-weight:800;
+    font-size:0.95rem;
+    color:var(--linen);
+    background:var(--sage-dark);
+    border:none;
+    padding:15px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 4px 0 rgba(91,70,54,0.25), 0 6px 14px rgba(91,70,54,0.25);
+    min-height:50px;
+  }
+  button.main-btn:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(91,70,54,0.25); }
+
+  button.ghost-btn{
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:0.85rem;
+    color:var(--sage-dark);
+    background:var(--linen);
+    border:2px solid var(--sage);
+    padding:15px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    min-height:50px;
+  }
+  button.ghost-btn:active{ background:var(--sage); color:var(--linen); }
+
+  /* modal for iOS-safe image save */
+  .save-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(91,70,54,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .save-modal.open{ display:flex; }
+  .save-modal-inner{
+    background:var(--linen);
+    border-radius:20px;
+    padding:18px;
+    max-width:400px;
+    width:100%;
+    text-align:center;
+  }
+  .save-modal-inner img{
+    width:100%;
+    border-radius:12px;
+    margin-bottom:12px;
+    box-shadow:0 8px 20px rgba(91,70,54,0.25);
+  }
+  .save-modal-inner p{
+    font-size:0.85rem;
+    color:var(--ink);
+    margin:0 0 14px;
+  }
+  .save-modal-inner .close-btn{
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    background:var(--sage-dark);
+    color:var(--linen);
+    border:none;
+    border-radius:999px;
+    padding:12px 24px;
+    min-height:46px;
+    cursor:pointer;
+  }
+
+  @media (min-width:600px){
+    .wrap{ max-width:560px; }
+    .grid{ gap:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="sprig">🌿 · ੈ✩‧₊˚ · 🌿</div>
+    <h1>REPORT</h1>
+    <div class="letters">
+      <span>Reading</span><span>Eating</span><span>Planning</span><span>Obsessing</span><span>Recommending</span><span>Trying</span>
+    </div>
+    <div class="sub">a little weekly check-in for the long-distance girlies 🐚</div>
+  </header>
+
+  <div class="board-shell" id="board">
+    <div class="board-header">
+      <input type="text" id="boardName" placeholder="Add your name here, cutie ✨" maxlength="40">
+    </div>
+    <div class="board-date" id="boardDate"></div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="hint">tap a photo box to upload, drag to reposition &amp; use the slider to zoom — or hit "✎ text" to write instead 🎨</div>
+
+  <footer>made with 🤎 for long distance besties</footer>
+</div>
+
+<div class="action-bar">
+  <button class="ghost-btn" id="resetBtn">↺ Reset</button>
+  <button class="main-btn" id="downloadBtn">⬇ Download my REPORT</button>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<div class="save-modal" id="saveModal">
+  <div class="save-modal-inner">
+    <img id="saveModalImg" src="" alt="your REPORT">
+    <p>Press and hold the image above, then tap "Save to Photos" to keep it 📸</p>
+    <button class="close-btn" id="closeModalBtn">Got it</button>
+  </div>
+</div>
+
+<script>
+const sections = [
+  {letter:'R', name:'Reading'},
+  {letter:'E', name:'Eating'},
+  {letter:'P', name:'Planning'},
+  {letter:'O', name:'Obsessing over'},
+  {letter:'R', name:'Recommending'},
+  {letter:'T', name:'Trying'}
+];
+
+const softColors = ['#F5EEDC','#D9E4D0','#EFDCB8','#C9DAC4','#E8D9C0','#DCE8DE'];
+
+const grid = document.getElementById('grid');
+let activeTileIndex = null;
+
+// per-tile photo state: rawImage (the original, uncropped Image element),
+// zoom (1 = fills the square at minimum, up to 3), offsetX/offsetY (pan, in
+// fractions of the tile size, 0 = centered). This is the single source of
+// truth for both the live on-screen preview and the final downloaded crop.
+const photoState = {};
+
+function applyPhotoTransform(idx){
+  const state = photoState[idx];
+  if (!state || !state.rawImage) return;
+  const tile = document.querySelector(`.tile[data-index="${idx}"]`);
+  const photoArea = tile.querySelector('[data-role="photo"]');
+  const img = photoArea.querySelector('img');
+  if (!img) return;
+
+  const box = photoArea.clientWidth; // square tile, so width === height
+  const iw = state.rawImage.naturalWidth;
+  const ih = state.rawImage.naturalHeight;
+  // base scale so the image's shorter side exactly fills the square, then
+  // multiply by the user's zoom on top of that
+  const baseScale = Math.max(box / iw, box / ih);
+  const scale = baseScale * state.zoom;
+  const renderedW = iw * scale;
+  const renderedH = ih * scale;
+
+  // clamp pan so we never reveal empty space beyond the image edges
+  const maxOffsetX = Math.max(0, (renderedW - box) / 2);
+  const maxOffsetY = Math.max(0, (renderedH - box) / 2);
+  state.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, state.offsetX));
+  state.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, state.offsetY));
+
+  img.style.width = renderedW + 'px';
+  img.style.height = renderedH + 'px';
+  img.style.transform = `translate(-50%, -50%) translate(${state.offsetX}px, ${state.offsetY}px)`;
+}
+
+function attachDragHandlers(idx, photoArea){
+  let dragging = false;
+  let startX = 0, startY = 0;
+  let startOffsetX = 0, startOffsetY = 0;
+
+  function pointerDown(e){
+    const state = photoState[idx];
+    if (!state || !state.rawImage) return;
+    dragging = true;
+    const point = e.touches ? e.touches[0] : e;
+    startX = point.clientX;
+    startY = point.clientY;
+    startOffsetX = state.offsetX;
+    startOffsetY = state.offsetY;
+    e.preventDefault();
+  }
+
+  function pointerMove(e){
+    if (!dragging) return;
+    const state = photoState[idx];
+    const point = e.touches ? e.touches[0] : e;
+    state.offsetX = startOffsetX + (point.clientX - startX);
+    state.offsetY = startOffsetY + (point.clientY - startY);
+    applyPhotoTransform(idx);
+    e.preventDefault();
+  }
+
+  function pointerUp(){
+    dragging = false;
+  }
+
+  photoArea.addEventListener('mousedown', pointerDown);
+  photoArea.addEventListener('touchstart', pointerDown, {passive:false});
+  window.addEventListener('mousemove', pointerMove);
+  window.addEventListener('touchmove', pointerMove, {passive:false});
+  window.addEventListener('mouseup', pointerUp);
+  window.addEventListener('touchend', pointerUp);
+}
+
+function buildGrid(){
+  grid.innerHTML = '';
+  sections.forEach((sec, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.dataset.index = i;
+    tile.innerHTML = `
+      <div class="tape"></div>
+      <div class="badge-row">
+        <div class="badge">${sec.letter}</div>
+        <div class="tile-name">${sec.name}</div>
+      </div>
+      <div class="tile-photo" data-role="photo" style="background:${softColors[i % softColors.length]}">
+        <div class="placeholder" data-role="placeholder">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B4636" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M21 16l-5-5-4 4-3-3-5 5"/></svg>
+          tap to add a photo
+        </div>
+        <textarea data-role="textarea" placeholder="...or write it here" style="display:none"></textarea>
+      </div>
+      <div class="zoom-row" data-role="zoomRow" style="display:none">
+        <span>🔍</span>
+        <input type="range" data-role="zoomSlider" min="100" max="300" value="100">
+      </div>
+      <div class="controls-row">
+        <div class="controls-top">
+          <div class="color-wrap">
+            <input type="color" data-role="colorpicker" value="${softColors[i % softColors.length]}" title="background color">
+          </div>
+          <button class="tile-btn" data-role="writeToggle">✎ text</button>
+        </div>
+        <button class="tile-btn danger" data-role="clearBtn">✕ clear</button>
+      </div>
+    `;
+    grid.appendChild(tile);
+  });
+
+  attachTileEvents();
+}
+
+function attachTileEvents(){
+  document.querySelectorAll('.tile').forEach(tile => {
+    const idx = tile.dataset.index;
+    const photoArea = tile.querySelector('[data-role="photo"]');
+    const placeholder = tile.querySelector('[data-role="placeholder"]');
+    const textarea = tile.querySelector('[data-role="textarea"]');
+    const colorpicker = tile.querySelector('[data-role="colorpicker"]');
+    const writeToggle = tile.querySelector('[data-role="writeToggle"]');
+    const clearBtn = tile.querySelector('[data-role="clearBtn"]');
+    const zoomRow = tile.querySelector('[data-role="zoomRow"]');
+    const zoomSlider = tile.querySelector('[data-role="zoomSlider"]');
+
+    photoArea.addEventListener('click', (e) => {
+      if (e.target === textarea) return;
+      if (photoArea.querySelector('img')) return; // once a photo exists, clicks drag instead of re-picking
+      activeTileIndex = idx;
+      document.getElementById('fileInput').click();
+    });
+
+    writeToggle.addEventListener('click', () => {
+      const img = photoArea.querySelector('img');
+      if (img) img.remove();
+      delete photoState[idx];
+      zoomRow.style.display = 'none';
+      const isHidden = textarea.style.display === 'none';
+      textarea.style.display = isHidden ? 'block' : 'none';
+      placeholder.style.display = isHidden ? 'none' : 'flex';
+      writeToggle.textContent = isHidden ? '🖼 photo' : '✎ text';
+      if(isHidden) textarea.focus();
+    });
+
+    colorpicker.addEventListener('input', () => {
+      photoArea.style.background = colorpicker.value;
+    });
+
+    clearBtn.addEventListener('click', () => {
+      const img = photoArea.querySelector('img');
+      if (img) img.remove();
+      delete photoState[idx];
+      zoomRow.style.display = 'none';
+      textarea.value = '';
+      textarea.style.display = 'none';
+      placeholder.style.display = 'flex';
+      writeToggle.textContent = '✎ text';
+    });
+
+    zoomSlider.addEventListener('input', () => {
+      const state = photoState[idx];
+      if (!state) return;
+      state.zoom = Number(zoomSlider.value) / 100;
+      applyPhotoTransform(idx);
+    });
+
+    attachDragHandlers(idx, photoArea);
+  });
+
+  // re-fit every photo's transform if the viewport resizes (tile squares
+  // change size, so the pixel math needs to be recomputed)
+  window.addEventListener('resize', () => {
+    Object.keys(photoState).forEach(idx => applyPhotoTransform(idx));
+  });
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file || activeTileIndex === null) return;
+  const idx = activeTileIndex;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const rawImg = new Image();
+    rawImg.onload = () => {
+      const tile = document.querySelector(`.tile[data-index="${idx}"]`);
+      const photoArea = tile.querySelector('[data-role="photo"]');
+      const placeholder = tile.querySelector('[data-role="placeholder"]');
+      const textarea = tile.querySelector('[data-role="textarea"]');
+      const zoomRow = tile.querySelector('[data-role="zoomRow"]');
+      const zoomSlider = tile.querySelector('[data-role="zoomSlider"]');
+
+      textarea.style.display = 'none';
+      placeholder.style.display = 'none';
+
+      let img = photoArea.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        photoArea.appendChild(img);
+      }
+      img.src = rawImg.src;
+
+      photoState[idx] = { rawImage: rawImg, zoom: 1, offsetX: 0, offsetY: 0 };
+      zoomSlider.value = 100;
+      zoomRow.style.display = 'flex';
+
+      // wait a frame so the tile has laid out (img just got inserted) before measuring
+      requestAnimationFrame(() => applyPhotoTransform(idx));
+    };
+    rawImg.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Clear everything and start a fresh REPORT?')) {
+    buildGrid();
+    document.getElementById('boardName').value = '';
+  }
+});
+
+function isIOS(){
+  return /iP(hone|od|ad)/.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const board = document.getElementById('board');
+  const downloadBtn = document.getElementById('downloadBtn');
+  downloadBtn.textContent = 'making your report...';
+  downloadBtn.disabled = true;
+
+  html2canvas(board, {scale: 2, useCORS: true, backgroundColor: '#FBF7EE'}).then(canvas => {
+    const name = document.getElementById('boardName').value.trim() || 'my-report';
+    const dataUrl = canvas.toDataURL('image/png');
+
+    if (isIOS()) {
+      // iOS Safari doesn't reliably support the download attribute,
+      // so show the image full-size for a long-press "Save to Photos" instead
+      document.getElementById('saveModalImg').src = dataUrl;
+      document.getElementById('saveModal').classList.add('open');
+    } else {
+      const link = document.createElement('a');
+      link.download = `REPORT-${name.replace(/\s+/g,'-')}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    downloadBtn.textContent = '⬇ Download my REPORT';
+    downloadBtn.disabled = false;
+  }).catch(() => {
+    downloadBtn.textContent = '⬇ Download my REPORT';
+    downloadBtn.disabled = false;
+    alert('Hmm, something went wrong making the image. Try again?');
+  });
+});
+
+document.getElementById('closeModalBtn').addEventListener('click', () => {
+  document.getElementById('saveModal').classList.remove('open');
+});
+
+function setDate(){
+  const today = new Date();
+  const options = { month: 'long', day: 'numeric', year: 'numeric' };
+  document.getElementById('boardDate').textContent = 'week of ' + today.toLocaleDateString('en-US', options);
+}
+
+buildGrid();
+setDate();
+</script>
+
+</body>
+</html>

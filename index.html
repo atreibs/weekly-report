@@ -356,18 +356,22 @@
 
   input[type=color]{
     -webkit-appearance:none;
-    width:24px;
-    height:24px;
-    border:none;
+    appearance:none;
+    width:26px;
+    height:26px;
+    border:2px solid var(--linen);
     border-radius:50%;
     cursor:pointer;
     padding:0;
     overflow:hidden;
-    background:none;
+    box-shadow:0 0 0 1.5px var(--mushroom);
   }
-  input[type=color]::-webkit-color-swatch-wrapper{ padding:0; }
-  input[type=color]::-webkit-color-swatch{ border:2px solid var(--linen); border-radius:50%; box-shadow:0 0 0 1.5px var(--mushroom); }
-  input[type=color]::-moz-color-swatch{ border:2px solid var(--linen); border-radius:50%; box-shadow:0 0 0 1.5px var(--mushroom); }
+  /* iOS Safari sometimes ignores -webkit-appearance:none on color inputs
+     and falls back to showing the hex value as text; forcing the swatch
+     pseudo-elements to fill the circle keeps it a clean color dot instead */
+  input[type=color]::-webkit-color-swatch-wrapper{ padding:0; border-radius:50%; overflow:hidden; }
+  input[type=color]::-webkit-color-swatch{ border:none; border-radius:50%; }
+  input[type=color]::-moz-color-swatch{ border:none; border-radius:50%; }
 
   .tile-btn{
     font-family:'Nunito', sans-serif;
@@ -609,29 +613,37 @@ function attachDragHandlers(idx, photoArea){
     startY = point.clientY;
     startOffsetX = state.offsetX;
     startOffsetY = state.offsetY;
-    e.preventDefault();
+    // don't preventDefault here — only once we're sure this is a drag,
+    // inside pointerMove, so a simple tap or page scroll is never blocked
   }
 
   function pointerMove(e){
     if (!dragging) return;
     const state = photoState[idx];
+    if (!state) { dragging = false; return; }
     const point = e.touches ? e.touches[0] : e;
     state.offsetX = startOffsetX + (point.clientX - startX);
     state.offsetY = startOffsetY + (point.clientY - startY);
     applyPhotoTransform(idx);
-    e.preventDefault();
+    // safe to prevent default now: we know a drag is genuinely in progress,
+    // this is what stops the photo drag from also scrolling the page
+    if (e.cancelable) e.preventDefault();
   }
 
-  function pointerUp(){
+  function pointerEnd(){
     dragging = false;
   }
 
   photoArea.addEventListener('mousedown', pointerDown);
-  photoArea.addEventListener('touchstart', pointerDown, {passive:false});
+  photoArea.addEventListener('touchstart', pointerDown, {passive:true});
   window.addEventListener('mousemove', pointerMove);
   window.addEventListener('touchmove', pointerMove, {passive:false});
-  window.addEventListener('mouseup', pointerUp);
-  window.addEventListener('touchend', pointerUp);
+  window.addEventListener('mouseup', pointerEnd);
+  window.addEventListener('touchend', pointerEnd);
+  window.addEventListener('touchcancel', pointerEnd);
+  // safety net: if a touch drag never gets a matching end/cancel event
+  // (a rare iOS edge case), don't let it block scrolling forever
+  window.addEventListener('blur', pointerEnd);
 }
 
 function buildGrid(){

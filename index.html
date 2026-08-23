@@ -263,13 +263,12 @@
   }
   .tile-photo .placeholder svg{ display:block; margin:0 auto 5px; width:20px; height:20px; }
 
-  .tile-photo textarea{
+  .tile-photo .textnote{
     position:absolute;
     inset:0;
     width:100%;
     height:100%;
     border:none;
-    resize:none;
     background:transparent;
     font-family:'Caveat', cursive;
     font-weight:700;
@@ -278,8 +277,19 @@
     color:var(--ink);
     padding:10px;
     text-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-wrap:break-word;
+    outline:none;
   }
-  .tile-photo textarea::placeholder{ color:rgba(91,70,54,0.4); font-family:'Nunito', sans-serif; font-size:0.72rem; font-weight:400;}
+  .tile-photo .textnote:empty::before{
+    content:attr(data-placeholder);
+    color:rgba(91,70,54,0.4);
+    font-family:'Nunito', sans-serif;
+    font-size:0.72rem;
+    font-weight:400;
+  }
 
   .tile-label{
     text-align:center;
@@ -289,6 +299,27 @@
     color:var(--mushroom);
     margin-top:8px;
     letter-spacing:0.3px;
+  }
+
+  .caption-input{
+    width:100%;
+    margin-top:8px;
+    border:none;
+    border-bottom:1.5px dashed var(--mushroom);
+    background:transparent;
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:1.05rem;
+    color:var(--ink);
+    text-align:center;
+    padding:4px 2px 6px;
+    outline:none;
+  }
+  .caption-input::placeholder{
+    font-family:'Nunito', sans-serif;
+    font-size:0.7rem;
+    font-weight:400;
+    color:rgba(91,70,54,0.4);
   }
 
   /* --- mobile-first controls: stacked rows so buttons stay tappable at half width --- */
@@ -493,7 +524,7 @@
 
 <div class="action-bar">
   <button class="ghost-btn" id="resetBtn">↺ Reset</button>
-  <button class="main-btn" id="downloadBtn">⬇ Download my REPORT</button>
+  <button class="main-btn" id="downloadBtn">⬇ Save my REPORT</button>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" style="display:none">
@@ -612,8 +643,9 @@ function buildGrid(){
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B4636" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M21 16l-5-5-4 4-3-3-5 5"/></svg>
           tap to add a photo
         </div>
-        <textarea data-role="textarea" placeholder="...or write it here" style="display:none"></textarea>
+        <div class="textnote" data-role="textnote" data-placeholder="...or write it here" contenteditable="true" style="display:none"></div>
       </div>
+      <input type="text" class="caption-input" data-role="captionInput" placeholder="add a little caption ✎" maxlength="60" style="display:none">
       <div class="zoom-row" data-role="zoomRow" style="display:none">
         <span>🔍</span>
         <input type="range" data-role="zoomSlider" min="100" max="300" value="100">
@@ -639,15 +671,16 @@ function attachTileEvents(){
     const idx = tile.dataset.index;
     const photoArea = tile.querySelector('[data-role="photo"]');
     const placeholder = tile.querySelector('[data-role="placeholder"]');
-    const textarea = tile.querySelector('[data-role="textarea"]');
+    const textnote = tile.querySelector('[data-role="textnote"]');
     const colorpicker = tile.querySelector('[data-role="colorpicker"]');
     const writeToggle = tile.querySelector('[data-role="writeToggle"]');
     const clearBtn = tile.querySelector('[data-role="clearBtn"]');
     const zoomRow = tile.querySelector('[data-role="zoomRow"]');
     const zoomSlider = tile.querySelector('[data-role="zoomSlider"]');
+    const captionInput = tile.querySelector('[data-role="captionInput"]');
 
     photoArea.addEventListener('click', (e) => {
-      if (e.target === textarea) return;
+      if (e.target === textnote) return;
       if (photoArea.querySelector('img')) return; // once a photo exists, clicks drag instead of re-picking
       activeTileIndex = idx;
       document.getElementById('fileInput').click();
@@ -658,11 +691,12 @@ function attachTileEvents(){
       if (img) img.remove();
       delete photoState[idx];
       zoomRow.style.display = 'none';
-      const isHidden = textarea.style.display === 'none';
-      textarea.style.display = isHidden ? 'block' : 'none';
+      captionInput.style.display = 'none';
+      const isHidden = textnote.style.display === 'none';
+      textnote.style.display = isHidden ? 'flex' : 'none';
       placeholder.style.display = isHidden ? 'none' : 'flex';
       writeToggle.textContent = isHidden ? '🖼 photo' : '✎ text';
-      if(isHidden) textarea.focus();
+      if(isHidden) textnote.focus();
     });
 
     colorpicker.addEventListener('input', () => {
@@ -674,8 +708,10 @@ function attachTileEvents(){
       if (img) img.remove();
       delete photoState[idx];
       zoomRow.style.display = 'none';
-      textarea.value = '';
-      textarea.style.display = 'none';
+      captionInput.style.display = 'none';
+      captionInput.value = '';
+      textnote.textContent = '';
+      textnote.style.display = 'none';
       placeholder.style.display = 'flex';
       writeToggle.textContent = '✎ text';
     });
@@ -709,11 +745,12 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
       const tile = document.querySelector(`.tile[data-index="${idx}"]`);
       const photoArea = tile.querySelector('[data-role="photo"]');
       const placeholder = tile.querySelector('[data-role="placeholder"]');
-      const textarea = tile.querySelector('[data-role="textarea"]');
+      const textnote = tile.querySelector('[data-role="textnote"]');
       const zoomRow = tile.querySelector('[data-role="zoomRow"]');
       const zoomSlider = tile.querySelector('[data-role="zoomSlider"]');
+      const captionInput = tile.querySelector('[data-role="captionInput"]');
 
-      textarea.style.display = 'none';
+      textnote.style.display = 'none';
       placeholder.style.display = 'none';
 
       let img = photoArea.querySelector('img');
@@ -726,6 +763,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
       photoState[idx] = { rawImage: rawImg, zoom: 1, offsetX: 0, offsetY: 0 };
       zoomSlider.value = 100;
       zoomRow.style.display = 'flex';
+      captionInput.style.display = 'block';
 
       // wait a frame so the tile has laid out (img just got inserted) before measuring
       requestAnimationFrame(() => applyPhotoTransform(idx));
@@ -749,37 +787,64 @@ function isIOS(){
          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-document.getElementById('downloadBtn').addEventListener('click', () => {
+async function dataUrlToFile(dataUrl, filename){
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: blob.type });
+}
+
+document.getElementById('downloadBtn').addEventListener('click', async () => {
   const board = document.getElementById('board');
   const downloadBtn = document.getElementById('downloadBtn');
   downloadBtn.textContent = 'making your report...';
   downloadBtn.disabled = true;
 
-  html2canvas(board, {scale: 2, useCORS: true, backgroundColor: '#FBF7EE'}).then(canvas => {
+  try {
+    const canvas = await html2canvas(board, {scale: 2, useCORS: true, backgroundColor: '#FBF7EE'});
     const name = document.getElementById('boardName').value.trim() || 'my-report';
+    const filename = `REPORT-${name.replace(/\s+/g,'-')}.png`;
     const dataUrl = canvas.toDataURL('image/png');
 
-    if (isIOS()) {
-      // iOS Safari doesn't reliably support the download attribute,
-      // so show the image full-size for a long-press "Save to Photos" instead
-      document.getElementById('saveModalImg').src = dataUrl;
-      document.getElementById('saveModal').classList.add('open');
-    } else {
+    // Best option on phones: the native share sheet, which has a real
+    // "Save Image" / "Save to Photos" button built into iOS and Android.
+    // A website can't write to the Photos app directly — neither platform
+    // allows that — but this is the closest one-tap equivalent.
+    const file = await dataUrlToFile(dataUrl, filename);
+    const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+
+    if (canShareFiles) {
+      try {
+        await navigator.share({ files: [file] });
+      } catch (shareErr) {
+        if (shareErr && shareErr.name === 'AbortError') {
+          // person closed the share sheet on purpose, nothing to do
+        } else {
+          // iOS can reject share() if too much time passed since the tap;
+          // fall back to the long-press-to-save modal so they're never stuck
+          document.getElementById('saveModalImg').src = dataUrl;
+          document.getElementById('saveModal').classList.add('open');
+        }
+      }
+    } else if (!isIOS()) {
+      // Desktop / Android browsers without Web Share: normal file download
       const link = document.createElement('a');
-      link.download = `REPORT-${name.replace(/\s+/g,'-')}.png`;
+      link.download = filename;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       link.remove();
+    } else {
+      // Older iOS Safari with neither Web Share nor reliable download support:
+      // show the full image so they can press-and-hold to save it
+      document.getElementById('saveModalImg').src = dataUrl;
+      document.getElementById('saveModal').classList.add('open');
     }
-
-    downloadBtn.textContent = '⬇ Download my REPORT';
-    downloadBtn.disabled = false;
-  }).catch(() => {
-    downloadBtn.textContent = '⬇ Download my REPORT';
-    downloadBtn.disabled = false;
+  } catch (err) {
     alert('Hmm, something went wrong making the image. Try again?');
-  });
+  }
+
+  downloadBtn.textContent = '⬇ Save my REPORT';
+  downloadBtn.disabled = false;
 });
 
 document.getElementById('closeModalBtn').addEventListener('click', () => {

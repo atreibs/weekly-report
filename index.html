@@ -15,9 +15,11 @@
     --linen:#FBF7EE;
     --honey:#D9A85A;
     --clay:#C97D4E;
+    --blush:#EFC6CE;
+    --blush-deep:#DFA0AE;
     --ink:#5B4636;
     --mushroom:#C9BBA8;
-    --washi: repeating-linear-gradient(45deg, rgba(138,154,126,0.5) 0 6px, rgba(217,168,90,0.45) 6px 12px);
+    --washi: repeating-linear-gradient(45deg, rgba(138,154,126,0.5) 0 6px, rgba(217,168,90,0.4) 6px 12px, rgba(223,160,174,0.4) 12px 18px);
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -78,6 +80,9 @@
     padding-bottom:1px;
     white-space:nowrap;
   }
+  .letters span:nth-child(even){
+    border-bottom-color:var(--blush-deep);
+  }
 
   .sub{
     text-align:center;
@@ -103,7 +108,8 @@
   .board-header input{
     font-family:'Fraunces', serif;
     font-weight:600;
-    font-size:1.2rem;
+    font-style:italic;
+    font-size:clamp(1.7rem, 8vw, 2.2rem);
     text-align:center;
     border:none;
     background:transparent;
@@ -111,14 +117,32 @@
     width:100%;
     padding:6px;
   }
-  .board-header input::placeholder{ color:var(--mushroom); }
+  .board-header input::placeholder{ color:var(--mushroom); font-style:italic; }
 
   .board-date{
     text-align:center;
     font-size:0.78rem;
     color:var(--sage-dark);
-    margin-bottom:18px;
+    margin-bottom:14px;
     font-style:italic;
+  }
+
+  .board-divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:20px;
+    color:var(--blush-deep);
+    font-size:0.7rem;
+  }
+  .board-divider::before,
+  .board-divider::after{
+    content:'';
+    flex:1;
+    max-width:70px;
+    height:1px;
+    background:repeating-linear-gradient(90deg, var(--mushroom) 0 4px, transparent 4px 8px);
   }
 
   .grid{
@@ -166,19 +190,12 @@
 
   .badge{
     flex-shrink:0;
-    width:26px;
-    height:26px;
-    border-radius:50%;
-    background:var(--sage-dark);
-    color:var(--linen);
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:0.82rem;
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 3px 6px rgba(0,0,0,0.18);
-    border:1.5px solid var(--linen);
+    font-size:1.35rem;
+    line-height:1;
+    filter:drop-shadow(0 2px 3px rgba(91,70,54,0.2));
   }
 
   .tile-name{
@@ -208,6 +225,23 @@
     display:flex;
     align-items:center;
     justify-content:center;
+  }
+
+  /* decorative scalloped frame overlaid on alternating photo tiles —
+     drawn as a real SVG path (not a CSS mask/clip-path), since those
+     aren't reliably supported by the html2canvas export step */
+  .scallop-frame{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+  }
+  .scallop-frame path{
+    fill:none;
+    stroke:var(--linen);
+    stroke-width:2.5;
+    opacity:0.9;
   }
 
   .tile-photo img{
@@ -529,9 +563,13 @@
     border:none;
     background:transparent;
   }
-  .board-shell.capturing .caption-input::placeholder,
   .board-shell.capturing .board-header input::placeholder{
-    opacity:0; /* keep layout spacing, hide the "add a caption" prompt text itself */
+    opacity:0; /* the name field keeps its slot even if empty */
+  }
+  /* an empty caption (still showing its placeholder) collapses away entirely
+     during export, instead of leaving a blank box or ghost text */
+  .board-shell.capturing .caption-input:placeholder-shown{
+    display:none;
   }
   .board-shell.capturing .tile{
     padding-bottom:8px; /* controls-row is gone, tighten the tile's bottom space */
@@ -555,6 +593,7 @@
       <input type="text" id="boardName" placeholder="Add your name here, cutie ✨" maxlength="40">
     </div>
     <div class="board-date" id="boardDate"></div>
+    <div class="board-divider">✿</div>
 
     <div class="grid" id="grid"></div>
   </div>
@@ -583,15 +622,15 @@
 
 <script>
 const sections = [
-  {letter:'R', name:'Reading'},
-  {letter:'E', name:'Eating'},
-  {letter:'P', name:'Planning'},
-  {letter:'O', name:'Obsessing over'},
-  {letter:'R', name:'Recommending'},
-  {letter:'T', name:'Trying'}
+  {emoji:'📖', name:'Reading'},
+  {emoji:'🍓', name:'Eating'},
+  {emoji:'🧺', name:'Planning'},
+  {emoji:'💭', name:'Obsessing over'},
+  {emoji:'🎀', name:'Recommending'},
+  {emoji:'🎲', name:'Trying'}
 ];
 
-const softColors = ['#F5EEDC','#D9E4D0','#EFDCB8','#C9DAC4','#E8D9C0','#DCE8DE'];
+const softColors = ['#F5EEDC','#D9E4D0','#EFDCB8','#C9DAC4','#E8D9C0','#F3D9DE'];
 
 const grid = document.getElementById('grid');
 let activeTileIndex = null;
@@ -687,7 +726,7 @@ function buildGrid(){
     tile.innerHTML = `
       <div class="tape"></div>
       <div class="badge-row">
-        <div class="badge">${sec.letter}</div>
+        <div class="badge">${sec.emoji}</div>
         <div class="tile-name">${sec.name}</div>
       </div>
       <div class="tile-photo-wrap">
@@ -698,6 +737,9 @@ function buildGrid(){
           </div>
           <div class="textnote" data-role="textnote" data-placeholder="...or write it here" contenteditable="true" style="display:none"></div>
         </div>
+        ${i % 2 === 0 ? `<svg class="scallop-frame" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M 3.00 3.00 A 6.71 6.71 0 0 1 16.43 3.00 A 6.71 6.71 0 0 1 29.86 3.00 A 6.71 6.71 0 0 1 43.29 3.00 A 6.71 6.71 0 0 1 56.71 3.00 A 6.71 6.71 0 0 1 70.14 3.00 A 6.71 6.71 0 0 1 83.57 3.00 A 6.71 6.71 0 0 1 97.00 3.00 A 6.71 6.71 0 0 1 97.00 16.43 A 6.71 6.71 0 0 1 97.00 29.86 A 6.71 6.71 0 0 1 97.00 43.29 A 6.71 6.71 0 0 1 97.00 56.71 A 6.71 6.71 0 0 1 97.00 70.14 A 6.71 6.71 0 0 1 97.00 83.57 A 6.71 6.71 0 0 1 97.00 97.00 A 6.71 6.71 0 0 1 83.57 97.00 A 6.71 6.71 0 0 1 70.14 97.00 A 6.71 6.71 0 0 1 56.71 97.00 A 6.71 6.71 0 0 1 43.29 97.00 A 6.71 6.71 0 0 1 29.86 97.00 A 6.71 6.71 0 0 1 16.43 97.00 A 6.71 6.71 0 0 1 3.00 97.00 A 6.71 6.71 0 0 1 3.00 83.57 A 6.71 6.71 0 0 1 3.00 70.14 A 6.71 6.71 0 0 1 3.00 56.71 A 6.71 6.71 0 0 1 3.00 43.29 A 6.71 6.71 0 0 1 3.00 29.86 A 6.71 6.71 0 0 1 3.00 16.43 A 6.71 6.71 0 0 1 3.00 3.00 Z" />
+        </svg>` : ''}
       </div>
       <input type="text" class="caption-input" data-role="captionInput" placeholder="add a little caption ✎" maxlength="60" style="display:none">
       <div class="zoom-row" data-role="zoomRow" style="display:none">

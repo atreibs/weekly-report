@@ -342,15 +342,19 @@
     background:transparent;
     font-family:'Caveat', cursive;
     font-weight:700;
-    font-size:1.05rem;
+    font-size:0.85rem;
+    line-height:1.35;
     color:var(--ink);
     text-align:center;
     padding:4px 2px 6px;
     outline:none;
+    resize:none;
+    min-height:2.7em; /* room for roughly two lines at this font-size/line-height */
+    overflow:hidden;
   }
   .caption-input::placeholder{
     font-family:'Nunito', sans-serif;
-    font-size:0.7rem;
+    font-size:0.68rem;
     font-weight:400;
     color:rgba(91,70,54,0.4);
   }
@@ -787,7 +791,7 @@ function buildGrid(){
           <div class="textnote" data-role="textnote" data-placeholder="...or write it here" contenteditable="true" style="display:none"></div>
         </div>
       </div>
-      <input type="text" class="caption-input" data-role="captionInput" placeholder="add a little caption ✎" maxlength="60" style="display:none">
+      <textarea class="caption-input" data-role="captionInput" placeholder="add a little caption ✎" maxlength="120" rows="2" style="display:none"></textarea>
       <div class="zoom-row" data-role="zoomRow" style="display:none">
         <span>🔍</span>
         <input type="range" data-role="zoomSlider" min="100" max="300" value="100">
@@ -825,6 +829,14 @@ function attachTileEvents(){
     const zoomRow = tile.querySelector('[data-role="zoomRow"]');
     const zoomSlider = tile.querySelector('[data-role="zoomSlider"]');
     const captionInput = tile.querySelector('[data-role="captionInput"]');
+
+    // auto-grow the caption box so longer captions (beyond ~2 lines) aren't
+    // clipped, instead of locking it to a fixed height
+    function resizeCaption(){
+      captionInput.style.height = 'auto';
+      captionInput.style.height = captionInput.scrollHeight + 'px';
+    }
+    captionInput.addEventListener('input', resizeCaption);
 
     photoArea.addEventListener('click', (e) => {
       if (e.target === textnote) return;
